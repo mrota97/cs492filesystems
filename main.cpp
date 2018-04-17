@@ -1,5 +1,6 @@
 #include <iostream>
 #include <getopt.h>
+#include "filetree.h"
 
 static void show_usage(char* progname) {
     std::cerr << "Usage: " << progname <<
@@ -10,8 +11,8 @@ static void show_usage(char* progname) {
 }
 
 int main(int argc, char* argv[]) {
-    int flags, opt;
-    char *file_list, *dir_list;
+    int flags = NULL, opt;
+    char *file_list = nullptr, *dir_list = nullptr;
 
     while ((opt = getopt(argc, argv, "f:d:s:b:")) != -1) {
         switch (opt) {
@@ -37,6 +38,14 @@ int main(int argc, char* argv[]) {
         std::cerr << "Expected argument after options" << std::endl;
         exit(EXIT_FAILURE);
     }
+
+    std::cout <<
+              "Flags = " << flags <<
+              "file_list = " << file_list <<
+              "dir_list = " << dir_list <<
+              std::endl;
+
+    FileTree root ("./", nullptr);
 
     exit(EXIT_SUCCESS);
 }
