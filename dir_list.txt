@@ -1,0 +1,12 @@
+./
+./cmake-build-debug
+./cmake-build-debug/CMakeFiles
+./cmake-build-debug/CMakeFiles/CMakeTmp
+./cmake-build-debug/CMakeFiles/3.10.3
+./cmake-build-debug/CMakeFiles/3.10.3/CompilerIdC
+./cmake-build-debug/CMakeFiles/3.10.3/CompilerIdC/tmp
+./cmake-build-debug/CMakeFiles/3.10.3/CompilerIdCXX
+./cmake-build-debug/CMakeFiles/3.10.3/CompilerIdCXX/tmp
+./cmake-build-debug/CMakeFiles/FileSystems.dir
+./.idea
+./.idea/codeStyles
