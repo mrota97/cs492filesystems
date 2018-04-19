@@ -10,15 +10,12 @@
 #include <vector>
 
 class FileTree {
+public:
     std::string path, name;
     off_t size;
     time_t timestamp;
-public:
     FileTree* parent;
     std::vector<FileTree*> children;
-
-
-    FileTree(std::string, FileTree*, std::string, off_t, time_t); // Constructor: file node
 
     // Getters
     std::string get_path() { return path; }
@@ -26,6 +23,8 @@ public:
     off_t get_size() { return size; }
     time_t get_timestamp() { return timestamp; }
 
+    // setters
+    void set_values(std::string, std::string, off_t, time_t, FileTree *);
     int add_child(FileTree*);
     unsigned long num_child() { return children.size(); }
     void update_timestamp(time_t new_timestamp) { timestamp = new_timestamp; }
@@ -35,8 +34,13 @@ public:
 
 // Class member declarations
 
-FileTree::FileTree(std::string path, FileTree *parent, std::string name= nullptr, off_t size=NULL, time_t timestamp=NULL) \
-: path(std::move(path)), parent(parent), name(std::move(name)), size(size), timestamp(timestamp) {}
+void FileTree::set_values(std::string n, std::string p, off_t s, time_t t, FileTree * root) {
+    name = std::move(n);
+    path = std::move(p);
+    size = s;
+    timestamp = t;
+    parent = root;
+}
 
 int FileTree::add_child(FileTree *Child) {
     unsigned long old_size = children.size();
@@ -47,14 +51,9 @@ int FileTree::add_child(FileTree *Child) {
     return 1;
 }
 
-FileTree* FileTree::get_node(std::string p, std::string n=NULL) {
+FileTree* FileTree::get_node(std::string p, std::string n) {
     FileTree * temp = this;
-    if (n == NULL) {
-        // Node returned will be a directory
-        if (get_path() == p) {
-            return temp;
-        }
-    }
+    return this;
 }
 
 // 

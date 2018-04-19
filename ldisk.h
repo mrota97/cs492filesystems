@@ -17,7 +17,7 @@ class ldisk {
 public:
     ldisk(unsigned long, unsigned long, bool, ldisk*);
 
-    findParent(ldisk node, ldisk target){
+    findParent(ldisk * node, ldisk * target){
       if(node.next == target){
         return node;
       }else{

@@ -9,7 +9,7 @@ class lfile {
     unsigned long start_addr;
     lfile * next;
 public:
-//    TODO
+
 };
 
 #endif //FILESYSTEMS_LFILE_H

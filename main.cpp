@@ -1,5 +1,8 @@
 #include <iostream>
 #include <getopt.h>
+#include <fstream>
+#include <fcntl.h>
+#include <cstring>
 #include "filetree.h"
 
 static void show_usage(char* progname) {
@@ -11,7 +14,8 @@ static void show_usage(char* progname) {
 }
 
 int main(int argc, char* argv[]) {
-    int flags = NULL, opt;
+    unsigned long disk_size;
+    int flags = NULL, opt, block_size;
     char *file_list = nullptr, *dir_list = nullptr;
 
     while ((opt = getopt(argc, argv, "f:d:s:b:")) != -1) {
@@ -25,8 +29,10 @@ int main(int argc, char* argv[]) {
                 dir_list = optarg;
                 break;
             case 's':
+                disk_size = strtoul(optarg, NULL, 0);
                 break;
             case 'b':
+                block_size = atoi(optarg);
                 break;
             default:
                 show_usage(argv[0]);
@@ -34,18 +40,41 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    if (optind >= argc) {
+    if (optind > argc) {
         std::cerr << "Expected argument after options" << std::endl;
         exit(EXIT_FAILURE);
     }
 
-    std::cout <<
-              "Flags = " << flags <<
-              "file_list = " << file_list <<
-              "dir_list = " << dir_list <<
-              std::endl;
+    // Scan in the directory and file lists
+    char size [256], month [256], day[256], time[256], name [256], path [256];
+    int check;
+    FILE * files, * dirs;
+    FileTree * G;
 
-    FileTree root ("./", nullptr);
+    dirs = fopen(dir_list, "r");
+    if (dirs == NULL) perror("Error: dir_list.txt");
+    else {
+        while ((check = fscanf(dirs, "%s", path)) != -1) {
+            if (strcmp(path, "./")) {
+                G->set_values(path, NULL, 0, 0, NULL);
+            }
+            else {
+
+            }
+        }
+    }
+
+    files = fopen(file_list, "r");
+    if (files == NULL) perror("Error: file_list.txt");
+    else {
+        while ((check = fscanf(files, "%*s %*s %*s %*s %*s %*s %s %s %s %s %s", size, month, day, time, name)) != -1) {
+
+        }
+        fclose(files);
+    }
+
+
+//    FileTree root ("./", nullptr);
     // cd no argument = ..
     // dir print out file tree
     // ls list current directory contents
