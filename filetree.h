@@ -33,8 +33,6 @@ public:
 
 // Class member declarations
 
-FileTree::FileTree(std::string path, FileTree *parent) : FileTree(std::move(path), parent, nullptr, NULL, NULL) {}
-
 FileTree::FileTree(std::string path, FileTree *parent, std::string name= nullptr, off_t size=NULL, time_t timestamp=NULL) \
 : path(std::move(path)), parent(parent), name(std::move(name)), size(size), timestamp(timestamp) {}
 
