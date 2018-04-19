@@ -16,6 +16,8 @@ class FileTree {
 public:
     FileTree* parent;
     std::vector<FileTree*> children;
+
+
     FileTree(std::string, FileTree*, std::string, off_t, time_t); // Constructor: file node
 
     // Getters
