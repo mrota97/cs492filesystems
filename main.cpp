@@ -46,6 +46,14 @@ int main(int argc, char* argv[]) {
               std::endl;
 
     FileTree root ("./", nullptr);
-
+    // cd no argument = ..
+    // dir print out file tree
+    // ls list current directory contents
+    // mkdir make a directory
+    // create takes a name makes a file
+    // append filename bytes
+    // remove filename bytes
+    // delete file or directory
+    // exit
     exit(EXIT_SUCCESS);
 }
