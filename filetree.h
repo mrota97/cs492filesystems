@@ -21,6 +21,13 @@ public:
     lfile ** file_info;
     std::vector<FileTree*> children;
 
+    // Constructor/Destructor
+    FileTree() {}
+    ~FileTree() {
+        FileTree * temp = parent;
+        delete file_info;
+    }
+
     // getters
     std::string get_path() { return this->path; }
     std::string get_name() { return this->name; }
@@ -34,7 +41,7 @@ public:
 
     // methods
     int add_child(FileTree*);
-    int remove_child(const std::string &);
+    int remove_child(const std::string &, const std::string &);
     FileTree* get_node(std::string, const std::string &);
 
     // Helpers
@@ -52,9 +59,9 @@ void FileTree::set_values(std::string n, std::string p, off_t s, time_t t, FileT
 }
 
 int FileTree::add_child(FileTree *child) {
-    unsigned long old_size = this->children.size();
+    unsigned long old_size = this->get_num_child();
     this->children.push_back(child);
-    if ((this->children.size() - old_size) == 1) {
+    if ((this->get_num_child() - old_size) == 1) {
         return 0;
     }
     return 1;
@@ -62,6 +69,8 @@ int FileTree::add_child(FileTree *child) {
 
 int FileTree::remove_child(const std::string &path, const std::string &name) {
     FileTree * to_remove = this->get_node(path, name);
+
+
 }
 
 // Takes in a path string and returns a vector of names
