@@ -8,7 +8,9 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include "globals.h"
 #include "lfile.h"
+
 
 class FileTree {
 public:
@@ -32,11 +34,11 @@ public:
 
     // methods
     int add_child(FileTree*);
-    int remove_child(std::string);
-    FileTree* get_node(std::string, std::string);
+    int remove_child(const std::string &);
+    FileTree* get_node(std::string, const std::string &);
 
     // Helpers
-    std::vector<std::string> path_to_vector(std::string, std::string);
+    std::vector<std::string> path_to_vector(std::string, const std::string &);
 };
 
 // Class member declarations
@@ -58,10 +60,12 @@ int FileTree::add_child(FileTree *child) {
     return 1;
 }
 
-int FileTree::remove_child(std::string name) {}
+int FileTree::remove_child(const std::string &path, const std::string &name) {
+    FileTree * to_remove = this->get_node(path, name);
+}
 
 // Takes in a path string and returns a vector of names
-std::vector<std::string> FileTree::path_to_vector(std::string p, std::string delimiter="/") {
+std::vector<std::string> FileTree::path_to_vector(std::string p, const std::string &delimiter) {
     std::vector<std::string> path_names;
     std::string name;
     size_t pos = 0;
@@ -76,12 +80,12 @@ std::vector<std::string> FileTree::path_to_vector(std::string p, std::string del
 }
 
 // Return a pointer to a node in the tree given its name
-FileTree* FileTree::get_node(std::string p, std::string n) {
+FileTree* FileTree::get_node(std::string p, const std::string &n) {
     FileTree * temp = this;
-    std::vector<std::string> path_names = temp->path_to_vector(p, "/");
+    std::vector<std::string> path_names = temp->path_to_vector(std::move(p), "/");
 
-    for (std::vector<std::string>::iterator names = path_names.begin(); names != path_names.end(); names++) {
-        for (std::vector<FileTree*>::iterator children = temp->children.begin(); children != temp->children.end(); children++) {
+    for (auto names = path_names.begin(); names != path_names.end(); names++) {
+        for (auto children = temp->children.begin(); children != temp->children.end(); children++) {
             if (*names == (*children)->name) {
                 // We've found something
                 temp = this;
@@ -100,6 +104,8 @@ FileTree* FileTree::get_node(std::string p, std::string n) {
 
     return this;
 }
+
+
 
 // 
 

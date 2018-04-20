@@ -4,6 +4,9 @@
 #include <fcntl.h>
 #include <cstring>
 #include "filetree.h"
+#include "ldisk.h"
+#include "globals.h"
+
 
 static void show_usage(char* progname) {
     std::cerr << "Usage: " << progname <<
@@ -14,8 +17,8 @@ static void show_usage(char* progname) {
 }
 
 int main(int argc, char* argv[]) {
-    unsigned long disk_size;
-    int flags = NULL, opt, block_size;
+    unsigned long disk_size, block_size;
+    int flags = NULL, opt;
     char *file_list = nullptr, *dir_list = nullptr;
 
     while ((opt = getopt(argc, argv, "f:d:s:b:")) != -1) {
@@ -29,10 +32,10 @@ int main(int argc, char* argv[]) {
                 dir_list = optarg;
                 break;
             case 's':
-                disk_size = strtoul(optarg, NULL, 0);
+                disk_size = strtoul(optarg, nullptr, 0);
                 break;
             case 'b':
-                block_size = atoi(optarg);
+                block_size = static_cast<unsigned long>(atoi(optarg));
                 break;
             default:
                 show_usage(argv[0]);
@@ -45,6 +48,8 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
 
+    unsigned long free_space = disk_size / block_size;
+
     // Scan in the directory and file lists
     char path [256];
     int check;
@@ -52,11 +57,11 @@ int main(int argc, char* argv[]) {
     FileTree *G = nullptr, * current = nullptr;
 
     dirs = fopen(dir_list, "r");
-    if (dirs == NULL) perror("Error: dir_list.txt");
+    if (dirs == nullptr) perror("Error: dir_list.txt");
     else {
         while ((check = fscanf(dirs, "%s", path)) != -1) {
-            if (strcmp(path, "./")) {
-                G->set_values(path, NULL, 0, 0, NULL);
+            if (strcmp(path, "./") != 0) {
+                G->set_values(path, nullptr, 0, 0, nullptr);
                 G = current;
             }
             else {
@@ -69,7 +74,7 @@ int main(int argc, char* argv[]) {
     FILE * files;
 
     files = fopen(file_list, "r");
-    if (files == NULL) perror("Error: file_list.txt");
+    if (files == nullptr) perror("Error: file_list.txt");
     else {
         while ((check = fscanf(files, "%*s %*s %*s %*s %*s %*s %s %s %s %s %s", size, month, day, time, name)) != -1) {
 
