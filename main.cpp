@@ -46,10 +46,10 @@ int main(int argc, char* argv[]) {
     }
 
     // Scan in the directory and file lists
-    char size [256], month [256], day[256], time[256], name [256], path [256];
+    char path [256];
     int check;
-    FILE * files, * dirs;
-    FileTree * G;
+    FILE * dirs;
+    FileTree *G = nullptr, * current = nullptr;
 
     dirs = fopen(dir_list, "r");
     if (dirs == NULL) perror("Error: dir_list.txt");
@@ -57,12 +57,16 @@ int main(int argc, char* argv[]) {
         while ((check = fscanf(dirs, "%s", path)) != -1) {
             if (strcmp(path, "./")) {
                 G->set_values(path, NULL, 0, 0, NULL);
+                G = current;
             }
             else {
-
+                //
             }
         }
     }
+
+    char size [256], month [256], day[256], time[256], name [256];
+    FILE * files;
 
     files = fopen(file_list, "r");
     if (files == NULL) perror("Error: file_list.txt");
