@@ -12,31 +12,32 @@
 #include "ldisk.h"
 #include "lfile.h"
 
-struct file_node {
+struct tree_node {
     std::string path, name;
     int level;
     bool is_dir;
     off_t size;
     time_t timestamp;
-    file_node * parent;
-    std::vector<file_node*> children;
+    tree_node * parent;
+    std::vector<tree_node*> children;
     lfile file_info;
-    friend std::ostream& operator<<(std::ostream &os, const file_node &n) {
+    friend std::ostream& operator<<(std::ostream &os, const tree_node &n) {
         return os << n.path;
     }
 };
 
 class FileTree {
-    file_node * root, * current_dir;
+    tree_node * root, * current_dir;
+    ldisk disk;
 public:
     // Constructors & Destructors
     FileTree();
-    FileTree(std::string root_dir);
+    FileTree(std::string root_dir, unsigned long disk, unsigned long block);
     virtual ~FileTree();
 
     // Helpers
     std::vector<std::string> path_to_vector(std::string path, const std::string &delimiter);
-    file_node* get_node(std::string name);
+    tree_node* get_node(std::string name);
     bool is_empty(std::string name);
 
     // Creation
@@ -51,7 +52,7 @@ public:
     void shorten(std::string name, unsigned long bytes);
 
     // Directory management
-    file_node* cwd();
+    tree_node* cwd();
     int cd(std::string path);
 
     // Printing
@@ -66,9 +67,10 @@ FileTree::FileTree() {
     current_dir = nullptr;
 }
 
-FileTree::FileTree(std::string root_dir) {
+FileTree::FileTree(std::string root_dir, unsigned long disk_size, unsigned long block_size) {
     std::string dir = root_dir;
-    file_node * temp = new file_node;
+    tree_node * temp = new tree_node;
+    ldisk disk = ldisk(disk_size, block_size);
     temp->name = dir;
     temp->path = dir;
     temp->level = 0;
@@ -84,8 +86,8 @@ FileTree::~FileTree() {}
 
 // Makes a directory with the specified name in the current directory
 void FileTree::mkdir(std::string name) {
-    file_node * dir = current_dir;
-    file_node * temp = new file_node;
+    tree_node * dir = current_dir;
+    tree_node * temp = new tree_node;
     temp->name = name;
     temp->path = dir->path + name + "/";
     temp->parent = dir;
@@ -98,8 +100,8 @@ void FileTree::mkdir(std::string name) {
 
 // Makes a file with the specified name in the current directory
 void FileTree::create(std::string name) {
-    file_node * dir = current_dir;
-    file_node * temp = new file_node;
+    tree_node * dir = current_dir;
+    tree_node * temp = new tree_node;
     temp->name = name;
     temp->path = dir->path + name;
     temp->is_dir = false;
@@ -110,9 +112,9 @@ void FileTree::create(std::string name) {
 
 // Removes a file or empty directory from the tree
 int FileTree::remove(std::string name) {
-    file_node * dir = current_dir;
+    tree_node * dir = current_dir;
     int pos = 0;
-    for (file_node* n: dir->children) {
+    for (tree_node* n: dir->children) {
         if (strcmp(name.c_str(), n->name.c_str()) == 0) {
             if (n->is_dir && n->children.size() > 0) {
                 std::cerr << "Directory is not empty" << std::endl;
@@ -135,10 +137,18 @@ int FileTree::remove(std::string name) {
 }
 
 // Append the specified amount of bytes to the given file
-void FileTree::append(std::string name, unsigned long bytes) {}
+void FileTree::append(std::string name, unsigned long bytes) {
+    tree_node * dir = get_node(name);
+    dir->file_info.append_bytes(bytes, &disk);
+    dir->size =+ bytes;
+}
 
 // Shorten the given file by the specified amount of bytes
-void FileTree::shorten(std::string name, unsigned long bytes) {}
+void FileTree::shorten(std::string name, unsigned long bytes) {
+    tree_node * dir = get_node(name);
+    dir->file_info.remove_bytes(bytes, &disk);
+    dir->size -= bytes;
+}
 
 // changes the working direcotry 
 int FileTree::cd(std::string name = "") {
@@ -149,7 +159,7 @@ int FileTree::cd(std::string name = "") {
         current_dir = current_dir->parent;
         return 0;
     } else {
-        file_node *dir = get_node(name);
+        tree_node *dir = get_node(name);
         if (dir->is_dir) {
             if (dir == current_dir) {
                 std::cerr << "Error: dir " << name << " was not found!" << std::endl;
@@ -165,9 +175,9 @@ int FileTree::cd(std::string name = "") {
 }
 
 // Returns a pointer to the node with the given name
-file_node* FileTree::get_node(std::string name) {
-    file_node * dir = current_dir;
-    for (file_node *e: dir->children) {
+tree_node* FileTree::get_node(std::string name) {
+    tree_node * dir = current_dir;
+    for (tree_node *e: dir->children) {
         if (strcmp(name.c_str(), e->name.c_str()) == 0) {
             return e;
         }
@@ -176,12 +186,12 @@ file_node* FileTree::get_node(std::string name) {
 }
 
 // Returns the current directory
-file_node* FileTree::cwd() {
+tree_node* FileTree::cwd() {
     return current_dir;
 }
 
 bool FileTree::is_empty(std::string name) {
-    file_node * dir = get_node(name);
+    tree_node * dir = get_node(name);
     return (dir->children.size() == 0);
 }
 
@@ -201,8 +211,8 @@ bool FileTree::is_empty(std::string name) {
 //}
 
 void FileTree::print_dir() {
-    file_node * dir = current_dir;
-    for (file_node *n: dir->children) {
+    tree_node * dir = current_dir;
+    for (tree_node *n: dir->children) {
         std::cout << n->path << std::endl;
     }
 }

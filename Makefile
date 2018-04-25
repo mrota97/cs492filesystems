@@ -1,20 +1,15 @@
-TARGET ?= a.out
-SRC_DIRS ?= ./
+CC = gcc
+CFLAGS = -g -Wall
 
-SRCS := $(shell find $(SRC_DIRS) -name *.cpp -or -name *.c -or -name *.s)
-OBJS := $(addsuffix .o,$(basename $(SRCS)))
-DEPS := $(OBJS:.o=.d)
+TARGET = FileSystem
 
-INC_DIRS := $(shell find $(SRC_DIRS) -type d)
-INC_FLAGS := $(addprefix -I,$(INC_DIRS))
+default: filesystem
 
-CPPFLAGS ?= $(INC_FLAGS) -MMD -MP
+filesystem: main.o
+	$(CC) $(CFLAGS) -o filesystem main.o
 
-$(TARGET): $(OBJS)
-	$(CC) $(LDFLAGS) $(OBJS) -o $@ $(LOADLIBES) $(LDLIBS)
+main.o: main.cpp filetree.h ldisk.h lfile.h
+	$(CC) $(CFLAGS) -c main.cpp
 
-.PHONY: clean
 clean:
-	$(RM) $(TARGET) $(OBJS) $(DEPS)
-
--include $(DEPS)
+	$(RM) filesystem *.o *~
