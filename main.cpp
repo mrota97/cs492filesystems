@@ -45,33 +45,27 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    FileTree G = FileTree("./");
-    std::cout << *G.cwd() << std::endl;
-
-    G.mkdir("dir1");
-    G.mkdir("dir2");
-    G.mkdir("dir3");
-
-    G.print_dir();
-
-    int check = G.cd("dir2");
-    std::cout << ((check==0) ? "success" : "failure") << std::endl;
-    std::cout << *G.cwd() << std::endl;
-
-    G.create("file1.txt");
-    G.create("file2.cpp");
-    G.create("file3.h");
-
-    G.print_dir();
-
-//    std::cout << G->cwd() << std::endl;
+//    FileTree G = FileTree("./");
+//    std::cout << *G.cwd() << std::endl;
 //
-//    G->mkdir("dir1");
-//    G->mkdir("dir2");
-//    G->mkdir("dir3");
+//    G.mkdir("dir1");
+//    G.mkdir("dir2");
+//    G.mkdir("dir3");
+//
+//    G.print_dir();
+//
+//    int check = G.cd("dir2");
+//    std::cout << ((check==0) ? "success" : "failure") << std::endl;
+//    std::cout << *G.cwd() << std::endl;
+//
+//    G.create("file1.txt");
+//    G.create("file2.cpp");
+//    G.create("file3.h");
+//
+//    G.print_dir();
 
 
-//    // Scan in the directory and file lists
+    // Scan in the directory and file lists
 //    char path [256];
 //    int check;
 //    FILE * dirs;
@@ -81,15 +75,14 @@ int main(int argc, char* argv[]) {
 //    if (dirs == nullptr) perror("Error: dir_list.txt");
 //    else {
 //        while ((check = fscanf(dirs, "%s", path)) != -1) {
-//            if (strcmp(path, "./") == 0) {
-//                std::string s((LPCTSTR)path);
+//            std::string s((const char*)path);
+//            if (strcmp(path, "./") == 0)
 //                G = FileTree(s);
-//            }
-//            else {
-//
-//            }
+//            else
+//                G.mkdir(s);
 //        }
 //    }
+
 //
 //    char size [256], month [256], day[256], time[256], name [256];
 //    FILE * files;
