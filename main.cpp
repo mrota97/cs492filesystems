@@ -46,11 +46,29 @@ int main(int argc, char* argv[]) {
     }
 
     FileTree G = FileTree("./");
-    std::cout << (*G.cwd()) << std::endl;
+    std::cout << *G.cwd() << std::endl;
 
     G.mkdir("dir1");
     G.mkdir("dir2");
     G.mkdir("dir3");
+
+    G.print_dir();
+
+    int check = G.cd("dir2");
+    std::cout << ((check==0) ? "success" : "failure") << std::endl;
+    std::cout << *G.cwd() << std::endl;
+
+    G.create("file1.txt");
+    G.create("file2.cpp");
+    G.create("file3.h");
+
+    G.print_dir();
+
+//    std::cout << G->cwd() << std::endl;
+//
+//    G->mkdir("dir1");
+//    G->mkdir("dir2");
+//    G->mkdir("dir3");
 
 
 //    // Scan in the directory and file lists

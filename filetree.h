@@ -14,6 +14,7 @@
 
 struct file_node {
     std::string path, name;
+    int level;
     bool is_dir;
     off_t size;
     time_t timestamp;
@@ -35,7 +36,8 @@ public:
 
     // Helpers
     std::vector<std::string> path_to_vector(std::string path, const std::string &delimiter);
-    file_node* get_node(std::string path);
+    file_node* get_node(std::string name);
+    bool is_empty(std::string name);
 
     // Creation
     void mkdir(std::string name);
@@ -50,7 +52,7 @@ public:
 
     // Directory management
     file_node* cwd();
-    void cd(std::string path);
+    int cd(std::string path);
 
     // Printing
     void print_dir();
@@ -65,14 +67,17 @@ FileTree::FileTree() {
 }
 
 FileTree::FileTree(std::string root_dir) {
+    std::string dir = root_dir;
     file_node * temp = new file_node;
-    temp->name = root_dir;
-    temp->path = root_dir;
+    temp->name = dir;
+    temp->path = dir;
+    temp->level = 0;
+    temp->parent = NULL;
     temp->is_dir = true;
     temp->size = 0;
-    temp->timestamp = 0;
-    temp = root;
-    temp = current_dir;
+    temp->timestamp = std::time(nullptr);
+    root = temp;
+    current_dir = temp;
 }
 
 FileTree::~FileTree() {}
@@ -83,6 +88,8 @@ void FileTree::mkdir(std::string name) {
     file_node * temp = new file_node;
     temp->name = name;
     temp->path = dir->path + name + "/";
+    temp->parent = dir;
+    temp->level = dir->level + 1;
     temp->is_dir = true;
     temp->size = 0;
     temp->timestamp = 0;
@@ -94,7 +101,7 @@ void FileTree::create(std::string name) {
     file_node * dir = current_dir;
     file_node * temp = new file_node;
     temp->name = name;
-    temp->path = dir->path + name + "/";
+    temp->path = dir->path + name;
     temp->is_dir = false;
     temp->size = 0;
     temp->timestamp = std::time(nullptr);
@@ -134,35 +141,38 @@ void FileTree::append(std::string name, unsigned long bytes) {}
 void FileTree::shorten(std::string name, unsigned long bytes) {}
 
 // changes the working direcotry 
-void FileTree::cd(std::string path = "") {
-    if (path.empty()) {
+int FileTree::cd(std::string name = "") {
+    if (name.empty()) {
         current_dir = root;
-    } else if (strcmp(path.c_str(), "..") == 0) {
+        return 0;
+    } else if (strcmp(name.c_str(), "..") == 0) {
         current_dir = current_dir->parent;
+        return 0;
     } else {
-        file_node * dir = get_node(path);
+        file_node *dir = get_node(name);
         if (dir->is_dir) {
+            if (dir == current_dir) {
+                std::cerr << "Error: dir " << name << " was not found!" << std::endl;
+                return 1;
+            }
             current_dir = dir;
+            return 0;
         } else {
             std::cerr << "Error: not a directory!" << std::endl;
+            return 1;
         }
     }
 }
 
-// Returns a pointer to the node with the given path
-file_node* FileTree::get_node(std::string path) {
-    file_node * temp = root;
-    std::vector<std::string> path_names = path_to_vector(path, "/");
-    while (temp != nullptr) {
-        for (file_node *e: temp->children) {
-            if (strcmp(path_names.front().c_str(), e->name.c_str()) == 0) {
-                if (path_names.size() == 1) {
-                    return e;
-                }
-                temp = e;
-            }
+// Returns a pointer to the node with the given name
+file_node* FileTree::get_node(std::string name) {
+    file_node * dir = current_dir;
+    for (file_node *e: dir->children) {
+        if (strcmp(name.c_str(), e->name.c_str()) == 0) {
+            return e;
         }
     }
+    return dir;
 }
 
 // Returns the current directory
@@ -170,27 +180,32 @@ file_node* FileTree::cwd() {
     return current_dir;
 }
 
-// Returns a vector of names in the path given the path string
-std::vector<std::string> FileTree::path_to_vector(std::string p, const std::string &delimiter) {
-    std::vector<std::string> path_names;
-    std::string name;
-    size_t pos = 0;
-
-    while ((pos = p.find(delimiter)) != std::string::npos) {
-        name = p.substr(0, pos);
-        path_names.push_back(name);
-        p.erase(0, pos + delimiter.length());
-    }
-
-    return path_names;
+bool FileTree::is_empty(std::string name) {
+    file_node * dir = get_node(name);
+    return (dir->children.size() == 0);
 }
 
-//void FileTree::print_dir() {
-//    file_node * dir = current_dir;
-//    for (file_node *n: dir->children) {
-//        std::cout <<
+// Returns a vector of names in the path given the path string
+//std::vector<std::string> FileTree::path_to_vector(std::string p, const std::string &delimiter) {
+//    std::vector<std::string> path_names;
+//    std::string name;
+//    size_t pos = 0;
+//
+//    while ((pos = p.find(delimiter)) != std::string::npos) {
+//        name = p.substr(0, pos);
+//        path_names.push_back(name);
+//        p.erase(0, pos + delimiter.length());
 //    }
+//
+//    return path_names;
 //}
+
+void FileTree::print_dir() {
+    file_node * dir = current_dir;
+    for (file_node *n: dir->children) {
+        std::cout << n->path << std::endl;
+    }
+}
 
 
 //void FileTree::debug_print() {

@@ -20,10 +20,10 @@ class lfile {
     virtual ~lfile();
     unsigned long physical_to_block(unsigned long physical, unsigned long block_size);
     unsigned long block_to_physical(unsigned long block, unsigned long block_size);
-    int add_block();
-    int remove_block();
+    file_block* add_block();
+    file_block* remove_block();
     int append_bytes(unsigned long bytes);
-    int remove_bytes(unsigned long bytes);
+    int remove_bytes(unsigned long bytes, unsigned long block_size);
 };
 
 lfile::lfile() {}
