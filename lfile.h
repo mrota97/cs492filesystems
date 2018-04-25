@@ -9,6 +9,7 @@
 struct file_block {
     unsigned long start_addr;
     file_block * next;
+    unsigned long free;
 };
 
 class lfile {
@@ -33,13 +34,47 @@ unsigned long lfile::physical_to_block(unsigned long physical, unsigned long blo
 
 unsigned long lfile::block_to_physical(unsigned long block, unsigned long block_size) {}
 
-int lfile::add_block() {}
+file_block* lfile::add_block() { //returns file block that is the new tail
+  // call ldisk
+  // increase size
+  // return new tail
+}
 
-int lfile::remove_block() {}
+file_block* lfile::remove_block() { // returns file block that is the new tail
+  // call ldisk
+  // decrease size
+  // return new tail
+}
 
-int lfile::append_bytes(unsigned long bytes) {}
+int lfile::append_bytes(unsigned long bytes) {
+  // get tail of lfile (a file_block)
+  // while(file_blocks.free < bytes)
+  //   bytes -= file_blocks.free
+  //   file_blocks.free = 0
+  //   file_block = add_block
+  // file_block.free -= bytes
+  // return 0
+  file_block* current_block = tail;
+  while(current_block->free <= bytes){
+    bytes -= current_block->free;
+    current_block->free = 0;
+    current_block = add_block();
+  }
+  current_block->free -= bytes;
+  return 0;
+}
 
-int lfile::remove_bytes(unsigned long bytes) {}
+int lfile::remove_bytes(unsigned long bytes, unsigned long block_size) {
+  file_block* current_block = tail;
+  unsigned long used = block_size - current_block->free; // used space in the block
+  while(used <= bytes){
+    bytes -= used;
+    used = 0;
+    current_block = remove_block();
+  }
+  current_block->free += bytes;
+  return 0;
+}
 
 //    // TODO: add ldisk add arguments to addFile
 //    // TODO: make sure arguments make sense
