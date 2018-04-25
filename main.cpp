@@ -4,9 +4,6 @@
 #include <fcntl.h>
 #include <cstring>
 #include "filetree.h"
-#include "ldisk.h"
-#include "globals.h"
-
 
 static void show_usage(char* progname) {
     std::cerr << "Usage: " << progname <<
@@ -17,7 +14,7 @@ static void show_usage(char* progname) {
 }
 
 int main(int argc, char* argv[]) {
-    unsigned long disk_size, block_size;
+    unsigned long disk_size = 0, block_size = 0;
     int flags = NULL, opt;
     char *file_list = nullptr, *dir_list = nullptr;
 
@@ -48,39 +45,45 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    unsigned long free_space = disk_size / block_size;
+    FileTree G = FileTree("./");
+    std::cout << (*G.cwd()) << std::endl;
 
-    // Scan in the directory and file lists
-    char path [256];
-    int check;
-    FILE * dirs;
-    FileTree *G = nullptr, * current = nullptr;
+    G.mkdir("dir1");
+    G.mkdir("dir2");
+    G.mkdir("dir3");
 
-    dirs = fopen(dir_list, "r");
-    if (dirs == nullptr) perror("Error: dir_list.txt");
-    else {
-        while ((check = fscanf(dirs, "%s", path)) != -1) {
-            if (strcmp(path, "./") != 0) {
-                G->set_values(path, nullptr, 0, 0, nullptr);
-                G = current;
-            }
-            else {
-                //
-            }
-        }
-    }
 
-    char size [256], month [256], day[256], time[256], name [256];
-    FILE * files;
-
-    files = fopen(file_list, "r");
-    if (files == nullptr) perror("Error: file_list.txt");
-    else {
-        while ((check = fscanf(files, "%*s %*s %*s %*s %*s %*s %s %s %s %s %s", size, month, day, time, name)) != -1) {
-
-        }
-        fclose(files);
-    }
+//    // Scan in the directory and file lists
+//    char path [256];
+//    int check;
+//    FILE * dirs;
+//    FileTree G;
+//
+//    dirs = fopen(dir_list, "r");
+//    if (dirs == nullptr) perror("Error: dir_list.txt");
+//    else {
+//        while ((check = fscanf(dirs, "%s", path)) != -1) {
+//            if (strcmp(path, "./") == 0) {
+//                std::string s((LPCTSTR)path);
+//                G = FileTree(s);
+//            }
+//            else {
+//
+//            }
+//        }
+//    }
+//
+//    char size [256], month [256], day[256], time[256], name [256];
+//    FILE * files;
+//
+//    files = fopen(file_list, "r");
+//    if (files == nullptr) perror("Error: file_list.txt");
+//    else {
+//        while ((check = fscanf(files, "%*s %*s %*s %*s %*s %*s %s %s %s %s %s", size, month, day, time, name)) != -1) {
+//
+//        }
+//        fclose(files);
+//    }
 
 
 //    FileTree root ("./", nullptr);
