@@ -70,6 +70,65 @@ int main(int argc, char* argv[]) {
     G.print_disk();
     G.print_file_info("file1.txt");
 
+    bool running = true;
+    while(running){
+      std::string s; // input from user goes here
+      std::string delimiter = ' ';
+      std::string token;
+      std::string command;
+      std::vector <std::string> args;
+      size_t pos = 0;
+      bool isCommand = true;
+
+      cin >> s;
+
+      while((pos = s.find(delimiter)) != std::string::npos){
+        token = s.substr(0,pos);
+        // do something with token
+        if(isCommand){
+          command = token;
+          isCommand = false;
+        }else{
+          args.push_back(token);
+        }
+        s.erase(0, pos + delimiter.length());
+      }
+      //do something with the last argument
+      args.push_back(s);
+
+      unsigned long bytes;
+      if(command == 'exit'){
+        running = false;
+      }else if(command == 'cd'){
+        G.cd(arg[0]);
+      }else if(command == 'cd..'){
+        G.cd();
+      }else if(command == 'ls'){
+        G.print_dir();
+      }else if(command == 'mkdir'){
+        G.mkdir(args[0]);
+      }else if(command == 'create'){
+        G.create(args[0]);
+      }else if(command == 'append'){
+        // conversion of string at args[1] to unsigned long bytes
+        G.append(args[0], bytes);
+      }else if(command == 'remove'){
+        // conversion of string at args[1] to unsigned long bytes
+        G.shorten(args[0], bytes);
+      }else if(command == 'delete'){
+        G.remove(args[0])
+      }else if(command == 'dir'){
+
+      }else if(command == 'prfiles'){
+        G.print_disk();
+      }else if(command == 'prdisk'){
+
+      }else{
+        //unknown command
+      }
+
+
+    }
     // Scan in the directory and file lists
 //    char path [256];
 //    int check;
