@@ -84,14 +84,14 @@ int main(int argc, char* argv[]) {
     bool running = true;
     while(running){
       std::string s; // input from user goes here
-      std::string delimiter = ' ';
+      std::string delimiter = " ";
       std::string token;
       std::string command;
-      std::vector <std::string> args;
+      std::vector<std::string> args;
       size_t pos = 0;
       bool isCommand = true;
 
-      cin >> s;
+      std::cin >> s;
 
       while((pos = s.find(delimiter)) != std::string::npos){
         token = s.substr(0,pos);
@@ -99,7 +99,7 @@ int main(int argc, char* argv[]) {
         if(isCommand){
           command = token;
           isCommand = false;
-        }else{
+        } else{
           args.push_back(token);
         }
         s.erase(0, pos + delimiter.length());
@@ -108,34 +108,36 @@ int main(int argc, char* argv[]) {
       args.push_back(s);
 
       unsigned long bytes;
-      if(command == 'exit'){
+      if(command == "exit"){
         running = false;
-      }else if(command == 'cd'){
-        G.cd(arg[0]);
-      }else if(command == 'cd..'){
-        G.cd();
-      }else if(command == 'ls'){
+      } else if(command == "cd"){
+        G.cd(args[0]);
+      } else if(command == "cd .."){
+        G.cd("..");
+      } else if(command == "ls"){
         G.print_dir();
-      }else if(command == 'mkdir'){
+      } else if(command == "mkdir"){
         G.mkdir(args[0]);
-      }else if(command == 'create'){
+      } else if(command == "create"){
         G.create(args[0]);
-      }else if(command == 'append'){
+      } else if(command == "append"){
         // conversion of string at args[1] to unsigned long bytes
+          bytes = strtoul(args[1].c_str(), nullptr, 0);
         G.append(args[0], bytes);
-      }else if(command == 'remove'){
+      } else if(command == "remove"){
         // conversion of string at args[1] to unsigned long bytes
+          bytes = strtoul(args[1].c_str(), nullptr, 0);
         G.shorten(args[0], bytes);
-      }else if(command == 'delete'){
-        G.remove(args[0])
-      }else if(command == 'dir'){
+      } else if(command == "delete"){
+        G.remove(args[0]);
+      } else if(command == "dir"){
 
-      }else if(command == 'prfiles'){
+      } else if(command == "prfiles"){
         G.print_disk();
-      }else if(command == 'prdisk'){
+      } else if(command == "prdisk"){
 
-      }else{
-        //unknown command
+      } else{
+          std::cerr << command << std::endl;
       }
 
 
