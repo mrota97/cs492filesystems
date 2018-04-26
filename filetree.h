@@ -56,6 +56,7 @@ public:
     int cd(std::string path);
 
     // Printing
+    void footprint();
     void print_dir();
     void print_disk();
     void print_file_info(std::string name);
@@ -228,6 +229,10 @@ void FileTree::print_disk() {
 void FileTree::print_file_info(std::string name) {
     tree_node * node = get_node(name);
     std::cout << node->file_info << std::endl;
+}
+
+void FileTree::footprint() {
+    disk.print_footprint();
 }
 
 //void FileTree::debug_print() {

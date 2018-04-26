@@ -81,6 +81,8 @@ int main(int argc, char* argv[]) {
     G.print_file_info("file1.txt");
     fflush(stdout);
 
+    G.footprint();
+
     bool running = true;
     while(running){
       std::string s; // input from user goes here

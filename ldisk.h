@@ -24,6 +24,7 @@ public:
     ldisk();
     ldisk(unsigned long disk, unsigned long block);
     virtual ~ldisk();
+    void print_footprint();
     int get_pos(disk_node * block);
     disk_node * find_block(unsigned long block_id);
     int combine();
@@ -64,6 +65,23 @@ ldisk::ldisk(unsigned long disk, unsigned long block) {
 
 ldisk::~ldisk() = default;
 
+void ldisk::print_footprint() {
+    disk_node * temp = head;
+    while (temp != nullptr) {
+        if (!temp->used) {
+            std::cout << "Free: ";
+        } else {
+            std::cout << "In use: ";
+        }
+        if (temp->block_end == temp->block_start) {
+            std::cout << temp->block_start << std::endl;
+        } else {
+            std::cout << temp->block_start << "-" << temp->block_end << std::endl;
+        }
+        temp = temp->next;
+    }
+}
+
 int ldisk::get_pos(disk_node * block) {
     disk_node * temp = head;
     int pos = 0;
@@ -88,17 +106,21 @@ disk_node * ldisk::find_block(unsigned long block_id) {
     return nullptr;
 }
 
-int ldisk::remove_block(unsigned long block_id) {
-//    disk_node * temp = head;
-//    while (temp != nullptr) {
-//        if (temp->next == block) {
-//            temp->next = temp->next->next;
-//            length--;
-//            return 0;
-//        }
-//        temp = temp->next;
-//    }
-//    return 1;
+int ldisk::remove_block(unsigned long addr) {
+    disk_node * temp = head;
+    unsigned long block_id = addr / block_size;
+    while (temp != nullptr) {
+        if (block_id > temp->block_start && block_id < temp->block_end) { // Between the two blocks but not one of them
+            std::cout << "do stuff" << std::endl;
+        } else if (block_id == temp->block_start && block_id == temp->block_end) { // Deletion of a single block
+            std::cout << "do stuff" << std::endl;
+        } else if (block_id == temp->block_start && block_id < temp->block_end) { // Block is at the beginning of a contiguous set
+            std::cout << "do stuff" << std::endl;
+        } else if (block_id > temp->block_start && block_id == temp->block_end) { // Block is at the end of a contiguous set
+            std::cout << "do stuff" << std::endl;
+        }
+    }
+    return 0;
 }
 
 int ldisk::combine() {

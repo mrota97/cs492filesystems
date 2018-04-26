@@ -21,7 +21,7 @@ class lfile {
     lfile();
     virtual ~lfile();
     file_node* add_block(ldisk * disk);
-    file_node* remove_block(ldisk * disk);
+    int remove_block(file_node * block, ldisk * disk);
     int append_bytes(unsigned long bytes, ldisk * disk);
     int remove_bytes(unsigned long bytes, ldisk * disk);
 
@@ -49,7 +49,7 @@ file_node* lfile::add_block(ldisk * disk) { //returns file block that is the new
   // increase size
   // return new tail
   unsigned long block_id = disk->use_block();
-  if (block_id == disk->length) // This means that the disk is out of space.
+  if (block_id == disk->block_size) // This means that the disk is out of space.
     return nullptr;
   file_node * block = new file_node;
   block->start_addr = block_id * disk->block_size;
@@ -58,10 +58,11 @@ file_node* lfile::add_block(ldisk * disk) { //returns file block that is the new
   return block;
 }
 
-file_node* lfile::remove_block(ldisk * disk) { // returns file block that is the new tail
+int lfile::remove_block(file_node * block, ldisk * disk) { // returns file block that is the new tail
   // call ldisk
   // decrease size
   // return new tail
+  int check = disk->remove_block(block->start_addr);
 }
 
 int lfile::append_bytes(unsigned long bytes, ldisk * disk) {
@@ -94,13 +95,22 @@ int lfile::append_bytes(unsigned long bytes, ldisk * disk) {
 
 int lfile::remove_bytes(unsigned long bytes, ldisk * disk) {
   file_node* current_block = tail;
-  unsigned long used = disk->block_size - current_block->free; // used space in the block
-  while(used <= bytes){
-    bytes -= used;
-    used = 0;
-    current_block = remove_block(disk);
+  if (tail == nullptr) {
+    return 1;
   }
-  current_block->free += bytes;
+  else {
+    unsigned long used = disk->block_size - current_block->free; // used space in the block
+    while(used <= bytes){
+      bytes -= used;
+      used = 0;
+      int check = remove_block(current_block, disk);
+      if (check == 0) {
+        // it was successful
+
+      }
+    }
+    current_block->free += bytes;
+  }
   return 0;
 }
 
