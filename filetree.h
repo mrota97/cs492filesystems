@@ -57,6 +57,8 @@ public:
 
     // Printing
     void print_dir();
+    void print_disk();
+    void print_file_info(std::string name);
     friend std::ostream& operator<<(std::ostream &strm, const FileTree &f) {
 
     }
@@ -69,8 +71,9 @@ FileTree::FileTree() {
 
 FileTree::FileTree(std::string root_dir, unsigned long disk_size, unsigned long block_size) {
     std::string dir = root_dir;
+    unsigned long block_s = block_size, disk_s = disk_size;
     tree_node * temp = new tree_node;
-    ldisk disk = ldisk(disk_size, block_size);
+    disk = ldisk(disk_s, block_s);
     temp->name = dir;
     temp->path = dir;
     temp->level = 0;
@@ -217,6 +220,14 @@ void FileTree::print_dir() {
     }
 }
 
+void FileTree::print_disk() {
+    std::cout << disk << std::endl;
+}
+
+void FileTree::print_file_info(std::string name) {
+    tree_node * node = get_node(name);
+    std::cout << node->file_info << std::endl;
+}
 
 //void FileTree::debug_print() {
 //    std::cout << "node(" <<

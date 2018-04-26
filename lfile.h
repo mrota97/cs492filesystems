@@ -10,7 +10,7 @@ struct file_node {
     file_node * next;
     unsigned long free;
     friend std::ostream& operator<<(std::ostream &os, const file_node &n) {
-      return os << "start addr: " << n.start_addr;
+      return os << "file(start addr: " << n.start_addr << ")";
     }
 };
 
@@ -20,16 +20,14 @@ class lfile {
     unsigned long size;
     lfile();
     virtual ~lfile();
-//    unsigned long physical_to_block(unsigned long physical, unsigned long block_size);
-//    unsigned long block_to_physical(unsigned long block, unsigned long block_size);
-    file_node* add_block();
-    file_node* remove_block();
+    file_node* add_block(ldisk * disk);
+    file_node* remove_block(ldisk * disk);
     int append_bytes(unsigned long bytes, ldisk * disk);
     int remove_bytes(unsigned long bytes, ldisk * disk);
 
     friend std::ostream &operator<<(std::ostream& os, const lfile &l){
       os << "[ ";
-      for (file_node * temp = l.head; temp != nullptr; temp=temp->next)
+      for (file_node * temp = l.head; temp != nullptr; temp = temp->next)
         os << *temp << ", ";
       os << "\b\b" << " ]";
       return os;
@@ -40,17 +38,21 @@ lfile::lfile() {}
 
 lfile::~lfile() {}
 
-//unsigned long lfile::physical_to_block(unsigned long physical, unsigned long block_size) {}
-
-//unsigned long lfile::block_to_physical(unsigned long block, unsigned long block_size) {}
-
-file_node* lfile::add_block() { //returns file block that is the new tail
+file_node* lfile::add_block(ldisk * disk) { //returns file block that is the new tail
   // call ldisk
   // increase size
   // return new tail
+  unsigned long block_id = disk->use_block();
+  if (block_id == disk->length) // This means that the disk is out of space.
+    return nullptr;
+  file_node * block = new file_node;
+  block->start_addr = block_id * disk->block_size;
+  block->next = NULL;
+  block->free = disk->block_size;
+  return block;
 }
 
-file_node* lfile::remove_block() { // returns file block that is the new tail
+file_node* lfile::remove_block(ldisk * disk) { // returns file block that is the new tail
   // call ldisk
   // decrease size
   // return new tail
@@ -64,11 +66,16 @@ int lfile::append_bytes(unsigned long bytes, ldisk * disk) {
   //   file_node = add_block
   // file_node.free -= bytes
   // return 0
-  file_node* current_block = tail;
+  file_node * current_block = tail, * temp;
   while(current_block->free <= bytes){
     bytes -= current_block->free;
     current_block->free = 0;
-    current_block = add_block();
+    temp = add_block(disk);
+    if (temp == nullptr) {
+      return 1;
+    }
+    current_block->next = temp;
+    current_block = current_block->next;
   }
   current_block->free -= bytes;
   return 0;
@@ -80,7 +87,7 @@ int lfile::remove_bytes(unsigned long bytes, ldisk * disk) {
   while(used <= bytes){
     bytes -= used;
     used = 0;
-    current_block = remove_block();
+    current_block = remove_block(disk);
   }
   current_block->free += bytes;
   return 0;

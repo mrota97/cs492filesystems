@@ -45,25 +45,30 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
 
-//    FileTree G = FileTree("./");
-//    std::cout << *G.cwd() << std::endl;
-//
-//    G.mkdir("dir1");
-//    G.mkdir("dir2");
-//    G.mkdir("dir3");
-//
-//    G.print_dir();
-//
-//    int check = G.cd("dir2");
-//    std::cout << ((check==0) ? "success" : "failure") << std::endl;
-//    std::cout << *G.cwd() << std::endl;
-//
-//    G.create("file1.txt");
-//    G.create("file2.cpp");
-//    G.create("file3.h");
-//
-//    G.print_dir();
+    FileTree G = FileTree("./", disk_size, block_size);
+    std::cout << *G.cwd() << std::endl;
 
+    G.mkdir("dir1");
+    G.mkdir("dir2");
+    G.mkdir("dir3");
+
+    G.print_dir();
+
+    int check = G.cd("dir2");
+    std::cout << ((check==0) ? "success" : "failure") << std::endl;
+    std::cout << *G.cwd() << std::endl;
+
+    G.create("file1.txt");
+    G.create("file2.cpp");
+    G.create("file3.h");
+
+    G.print_dir();
+
+    G.print_disk();
+
+    G.append("file1.txt", 10);
+    G.print_disk();
+    G.print_file_info("file1.txt");
 
     // Scan in the directory and file lists
 //    char path [256];

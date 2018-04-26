@@ -12,7 +12,7 @@ struct disk_node {
     unsigned long block_end;
     bool used;
     disk_node * next;
-    friend std::ostream& operator<<(std::ostream& os, const disk_node& d){
+    friend std::ostream& operator<<(std::ostream& os, const disk_node &d){
         return os << "block(" << d.block_start << "->" << d.block_end << ", "<< d.used <<")";
     }
 };
@@ -27,109 +27,17 @@ public:
     int get_pos(disk_node * block);
     disk_node * find_block(unsigned long block_id);
     int combine();
-    int remove_block(disk_node * block);
-    int use_block(unsigned long length);
+    int remove_block(unsigned long block_id);
+    unsigned long use_block();
     friend std::ostream &operator<<(std::ostream& os, const ldisk &l){
         os << "[ ";
-        for (disk_node * temp = l.head; temp != nullptr; temp=temp->next)
-            os << *temp << ", ";
-        os << "\b\b" << " ]";
-        return os;
-    }
-
-
-/*
-    ldisk * find_block(ldisk * target) {
-        ldisk * temp = this;
+        disk_node * temp = l.head;
         while (temp != nullptr) {
-            if (temp == target)
-                return target;
+            os << *temp << ", ";
             temp = temp->next;
         }
-        std::cerr << "Error: target not found" << std::endl;
-        return nullptr;
+        return os << "\b\b" << " ]";
     }
-
-    ldisk* findParent(ldisk * node, ldisk * target) {
-      if(node->next == target){
-        return node;
-      }else{
-        if(node->next == nullptr){
-           std::cerr << "Error: target not found" << std::endl;
-        }
-        return findParent(node->next, target);
-      }
-    }
-
-    void combine_edit() {
-        ldisk * temp = this;
-        if (temp->next == nullptr)
-            return; // Nothing to do
-        while (temp->next != nullptr) {
-
-            temp = temp->next;
-        }
-    }
-
-    void combine(ldisk * node){ // combines from node given forwards
-      if(node->next == nullptr){ // end of list
-        return; // done combining
-      }
-      if(node->used == node->next->used){ // need to be combined
-        node->block_end = node->next->block_end;
-        auto * temp = node->next->next;
-        delete node->next;
-        node->next = temp;
-        return combine(node->next);
-      }else{
-        return combine(node->next);
-      }
-    }
-
-    unsigned long add(ldisk * node, ldisk * root){
-      if(free_space < 1){
-        std::cerr << "Error: disk full" << std::endl;
-      }
-      if(node->used){
-        return add(node->next, root);
-      }else{
-        auto * newNode = new ldisk(node->block_start+1,node->block_start+2,true,node->next);
-        node->next = newNode;
-        node->block_end = node->block_end+2;
-        combine(root);
-        free_space--;
-        return node->block_start+1;
-      }
-    }
-
-    void remove(ldisk * node, unsigned long location, ldisk * root){
-      if(!node->used && node->next == nullptr){
-        std::cerr << "Error: node not found" << std::endl;
-      }
-      if(!node->used){
-        return remove(node->next, location, root);
-      }
-      if(node->block_start <= location && node->block_end >= location){
-        if(location == node->block_start){ // beginning
-          auto * nodeBefore = new ldisk(node->block_start,node->block_start+1,false,node);
-          node->block_start = node->block_start+1;
-          findParent(root, node)->next = nodeBefore;
-        }else if(location == node->block_end){ // end
-          auto * nodeAfter = new ldisk(node->block_end,node->block_end+1,false,node->next);
-          node->block_end = node->block_end-1;
-          node->next = nodeAfter;
-        }
-        else{ //middle
-          auto * nodeBefore = new ldisk(node->block_start,location,true,node);
-          auto * nodeAfter = new ldisk(location+1,node->block_end,true,node->next);
-          node->block_start = location;
-          node->block_end = location+1;
-          node->next = nodeAfter;
-        }
-        combine(root);
-        return;
-      }
-    }*/
 };
 
 ldisk::ldisk() {
@@ -145,7 +53,7 @@ ldisk::ldisk(unsigned long disk, unsigned long block) {
     auto * temp = new disk_node;
     temp->block_start = 0;
     temp->block_end = (disk / block) - 1;
-    temp->next = nullptr;
+    temp->next = NULL;
     head = temp;
     tail = temp;
     free_blocks = disk / block;
@@ -180,17 +88,17 @@ disk_node * ldisk::find_block(unsigned long block_id) {
     return nullptr;
 }
 
-int ldisk::remove_block(disk_node * block) {
-    disk_node * temp = head;
-    while (temp != nullptr) {
-        if (temp->next == block) {
-            temp->next = temp->next->next;
-            length--;
-            return 0;
-        }
-        temp = temp->next;
-    }
-    return 1;
+int ldisk::remove_block(unsigned long block_id) {
+//    disk_node * temp = head;
+//    while (temp != nullptr) {
+//        if (temp->next == block) {
+//            temp->next = temp->next->next;
+//            length--;
+//            return 0;
+//        }
+//        temp = temp->next;
+//    }
+//    return 1;
 }
 
 int ldisk::combine() {
@@ -212,9 +120,50 @@ int ldisk::combine() {
     return changed;
 }
 
-int ldisk::use_block(unsigned long length) {
-    disk_node * temp = head;
+// Inserts a block in a free space and returns its block_id
+unsigned long ldisk::use_block() {
+    if (free_blocks == 0) {
+        std::cerr << "Out of space." << std::endl;
+        return length;
+    }
+    disk_node * curr = head, * next = head;
+    auto * use = new disk_node;
+    use->used = true;
+    while (curr != nullptr) {
+        if (!curr->used) {
+            unsigned long block_location = curr->block_start;
+            use->block_start = block_location;
+            use->block_end = block_location;
+            curr->block_start++;
 
+            use->next = curr;
+            head = use;
+
+            int check = combine();
+            if (check <= 0)
+                std::cerr << "Error: something went wrong in the combining of nodes." << std::endl;
+            return block_location;
+        } else {
+            while (curr->next != nullptr) {
+                next = curr->next;
+                if (!next->used) {
+                    unsigned long block_location = next->block_start;
+                    use->block_start = block_location;
+                    use->block_end = block_location;
+                    next->block_start++;
+
+                    use->next = next;
+                    curr->next = use;
+
+                    int check = combine();
+                    if (check <= 0)
+                        std::cerr << "Error: something went wrong in the combining of nodes." << std::endl;
+                    return block_location;
+                }
+                curr = curr->next;
+            }
+        }
+    }
 }
 
 
