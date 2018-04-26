@@ -88,50 +88,43 @@ int main(int argc, char* argv[]) {
       std::string s; // input from user goes here
       std::string delimiter = " ";
       std::string token;
-      std::string command;
       std::vector<std::string> args;
       size_t pos = 0;
-      bool isCommand = true;
 
       std::cin >> s;
 
       while((pos = s.find(delimiter)) != std::string::npos){
         token = s.substr(0,pos);
-        // do something with token
-        if(isCommand){
-          command = token;
-          isCommand = false;
-        } else{
-          args.push_back(token);
-        }
+        args.push_back(token);
         s.erase(0, pos + delimiter.length());
       }
       //do something with the last argument
       args.push_back(s);
 
       unsigned long bytes;
+      std::string command = args[0];
       if(command == "exit"){
         running = false;
       } else if(command == "cd"){
-        G.cd(args[0]);
+        G.cd(args[1]);
       } else if(command == "cd .."){
         G.cd("..");
       } else if(command == "ls"){
         G.print_dir();
       } else if(command == "mkdir"){
-        G.mkdir(args[0]);
+        G.mkdir(args[1]);
       } else if(command == "create"){
-        G.create(args[0]);
+        G.create(args[1]);
       } else if(command == "append"){
-        // conversion of string at args[1] to unsigned long bytes
-          bytes = strtoul(args[1].c_str(), nullptr, 0);
-        G.append(args[0], bytes);
+        // conversion of string at args[2] to unsigned long bytes
+          bytes = strtoul(args[2].c_str(), nullptr, 0);
+        G.append(args[1], bytes);
       } else if(command == "remove"){
-        // conversion of string at args[1] to unsigned long bytes
-          bytes = strtoul(args[1].c_str(), nullptr, 0);
-        G.shorten(args[0], bytes);
+        // conversion of string at args[2] to unsigned long bytes
+          bytes = strtoul(args[2].c_str(), nullptr, 0);
+        G.shorten(args[1], bytes);
       } else if(command == "delete"){
-        G.remove(args[0]);
+        G.remove(args[1]);
       } else if(command == "dir"){
 
       } else if(command == "prfiles"){
