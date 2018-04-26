@@ -39,6 +39,7 @@ public:
     std::vector<std::string> path_to_vector(std::string path, const std::string &delimiter);
     tree_node* get_node(std::string name);
     bool is_empty(std::string name);
+    void absoulute_add(std::string path, bool type);
 
     // Creation
     void mkdir(std::string name);
@@ -52,8 +53,8 @@ public:
     void shorten(std::string name, unsigned long bytes);
 
     // Directory management
-    tree_node* cwd();
-    int cd(std::string path);
+    std::string cwd();
+    int cd(std::string path="");
 
     // Printing
     void footprint();
@@ -145,7 +146,7 @@ void FileTree::append(std::string name, unsigned long bytes) {
     tree_node * dir = get_node(name);
     lfile file_info = lfile();
     dir->file_info.append_bytes(bytes, &disk);
-    dir->size =+ bytes;
+    dir->size += bytes;
 }
 
 // Shorten the given file by the specified amount of bytes
@@ -156,13 +157,16 @@ void FileTree::shorten(std::string name, unsigned long bytes) {
 }
 
 // changes the working direcotry 
-int FileTree::cd(std::string name = "") {
+int FileTree::cd(std::string name) {
     if (name.empty()) {
         current_dir = root;
         return 0;
     } else if (strcmp(name.c_str(), "..") == 0) {
-        current_dir = current_dir->parent;
+        if (current_dir->parent != nullptr)
+            current_dir = current_dir->parent;
         return 0;
+    } else if (strcmp(name.c_str(), current_dir->name.c_str()) == 0) {
+        // Do nothing
     } else {
         tree_node *dir = get_node(name);
         if (dir->is_dir) {
@@ -191,8 +195,8 @@ tree_node* FileTree::get_node(std::string name) {
 }
 
 // Returns the current directory
-tree_node* FileTree::cwd() {
-    return current_dir;
+std::string FileTree::cwd() {
+    return current_dir->path;
 }
 
 bool FileTree::is_empty(std::string name) {
@@ -200,25 +204,43 @@ bool FileTree::is_empty(std::string name) {
     return (dir->children.size() == 0);
 }
 
+// Given a path, traverse the tree and add the node at that path
+void FileTree::absoulute_add(std::string path, bool type) {
+    std::vector<std::string> path_names = path_to_vector(path, "/");
+    for (std::string &name: path_names) {
+        std::cout << name << "->";
+    }
+    std::cout << "\b\b" << std::endl;
+}
+
 // Returns a vector of names in the path given the path string
-//std::vector<std::string> FileTree::path_to_vector(std::string p, const std::string &delimiter) {
-//    std::vector<std::string> path_names;
-//    std::string name;
-//    size_t pos = 0;
-//
-//    while ((pos = p.find(delimiter)) != std::string::npos) {
-//        name = p.substr(0, pos);
-//        path_names.push_back(name);
-//        p.erase(0, pos + delimiter.length());
-//    }
-//
-//    return path_names;
-//}
+std::vector<std::string> FileTree::path_to_vector(std::string p, const std::string &delimiter) {
+    std::vector<std::string> path_names;
+    std::string name;
+    size_t pos = 0;
+
+    // Extract the root dir from the path
+    name = p.substr(0, 2);
+    path_names.push_back(name);
+    p.erase(0, 2);
+
+    // Then get the other names
+    while ((pos = p.find(delimiter)) != std::string::npos) {
+        name = p.substr(0, pos);
+        path_names.push_back(name);
+        p.erase(0, pos + delimiter.length());
+    }
+
+    if (!p.empty())
+        path_names.push_back(p);
+
+    return path_names;
+}
 
 void FileTree::print_dir() {
     tree_node * dir = current_dir;
     for (tree_node *n: dir->children) {
-        std::cout << n->path << std::endl;
+        std::cout << n->name << std::endl;
     }
 }
 

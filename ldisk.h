@@ -19,7 +19,7 @@ struct disk_node {
 
 class ldisk {
 public:
-    disk_node  *head, *tail;
+    disk_node  *head;
     unsigned long free_blocks, length, disk_size, block_size;
     ldisk();
     ldisk(unsigned long disk, unsigned long block);
@@ -28,7 +28,7 @@ public:
     int get_pos(disk_node * block);
     disk_node * find_block(unsigned long block_id);
     int combine();
-    int remove_block(unsigned long block_id);
+    int remove_block(unsigned long addr);
     unsigned long use_block();
     friend std::ostream &operator<<(std::ostream& os, const ldisk &l){
         os << "[ ";
@@ -43,7 +43,6 @@ public:
 
 ldisk::ldisk() {
     head = nullptr;
-    tail = nullptr;
     free_blocks = 0;
     length = 0;
     disk_size = 0;
@@ -54,9 +53,8 @@ ldisk::ldisk(unsigned long disk, unsigned long block) {
     auto * temp = new disk_node;
     temp->block_start = 0;
     temp->block_end = (disk / block) - 1;
-    temp->next = NULL;
+    temp->next = nullptr;
     head = temp;
-    tail = temp;
     free_blocks = disk / block;
     disk_size = disk;
     block_size = block;

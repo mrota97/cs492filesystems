@@ -24,6 +24,7 @@ class lfile {
     int remove_block(file_node * block, ldisk * disk);
     int append_bytes(unsigned long bytes, ldisk * disk);
     int remove_bytes(unsigned long bytes, ldisk * disk);
+    unsigned long wasted_space();
 
     friend std::ostream &operator<<(std::ostream& os, const lfile &l){
       os << "[ ";

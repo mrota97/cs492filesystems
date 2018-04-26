@@ -32,7 +32,7 @@ int main(int argc, char* argv[]) {
                 disk_size = strtoul(optarg, nullptr, 0);
                 break;
             case 'b':
-                block_size = static_cast<unsigned long>(atoi(optarg));
+                block_size = strtoul(optarg, nullptr, 0);
                 break;
             default:
                 show_usage(argv[0]);
@@ -45,99 +45,70 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    FileTree G = FileTree("./", disk_size, block_size);
-    std::cout << *G.cwd() << std::endl;
+//    FileTree G = FileTree("./", disk_size, block_size);
+//    std::cout << *G.cwd() << std::endl;
+//
+//    G.mkdir("dir1");
+//    G.mkdir("dir2");
+//    G.mkdir("dir3");
+//
+//    G.print_dir();
+//
+//    int check = G.cd("dir2");
+//    std::cout << ((check==0) ? "success" : "failure") << std::endl;
+//    std::cout << *G.cwd() << std::endl;
+//
+//    G.create("file1.txt");
+//    G.create("file2.cpp");
+//    G.create("file3.h");
+//
+//    G.print_dir();
+//    fflush(stdout);
+//    G.print_disk();
+//    fflush(stdout);
+//
+//    G.append("file1.txt", 10);
+//
+//    G.print_disk();
+//    fflush(stdout);
+//    G.print_file_info("file1.txt");
+//    fflush(stdout);
+//
+//    G.append("file1.txt", 10);
+//
+//    G.print_disk();
+//    fflush(stdout);
+//    G.print_file_info("file1.txt");
+//    fflush(stdout);
+//
+//    G.footprint();
 
-    G.mkdir("dir1");
-    G.mkdir("dir2");
-    G.mkdir("dir3");
+    FileTree G;
 
-    G.print_dir();
-
-    int check = G.cd("dir2");
-    std::cout << ((check==0) ? "success" : "failure") << std::endl;
-    std::cout << *G.cwd() << std::endl;
-
-    G.create("file1.txt");
-    G.create("file2.cpp");
-    G.create("file3.h");
-
-    G.print_dir();
-    fflush(stdout);
-    G.print_disk();
-    fflush(stdout);
-
-    G.append("file1.txt", 10);
-
-    G.print_disk();
-    fflush(stdout);
-    G.print_file_info("file1.txt");
-    fflush(stdout);
-
-    G.append("file1.txt", 10);
-
-    G.print_disk();
-    fflush(stdout);
-    G.print_file_info("file1.txt");
-    fflush(stdout);
-
-    G.footprint();
-
-    bool running = true;
-    while(running){
-      std::string s; // input from user goes here
-      std::string delimiter = " ";
-      std::string token;
-      std::vector<std::string> args;
-      size_t pos = 0;
-
-      std::cin >> s;
-
-      while((pos = s.find(delimiter)) != std::string::npos){
-        token = s.substr(0,pos);
-        args.push_back(token);
-        s.erase(0, pos + delimiter.length());
-      }
-      //do something with the last argument
-      args.push_back(s);
-
-      unsigned long bytes;
-      std::string command = args[0];
-      if(command == "exit"){
-        running = false;
-      } else if(command == "cd"){
-        G.cd(args[1]);
-      } else if(command == "cd .."){
-        G.cd("..");
-      } else if(command == "ls"){
-        G.print_dir();
-      } else if(command == "mkdir"){
-        G.mkdir(args[1]);
-      } else if(command == "create"){
-        G.create(args[1]);
-      } else if(command == "append"){
-        // conversion of string at args[2] to unsigned long bytes
-          bytes = strtoul(args[2].c_str(), nullptr, 0);
-        G.append(args[1], bytes);
-      } else if(command == "remove"){
-        // conversion of string at args[2] to unsigned long bytes
-          bytes = strtoul(args[2].c_str(), nullptr, 0);
-        G.shorten(args[1], bytes);
-      } else if(command == "delete"){
-        G.remove(args[1]);
-      } else if(command == "dir"){
-
-      } else if(command == "prfiles"){
-        G.print_disk();
-      } else if(command == "prdisk"){
-
-      } else{
-          std::cerr << command << std::endl;
-      }
-
-
+    std::string line;
+    std::vector<std::string> paths;
+    bool init = true;
+    std::ifstream dirs (dir_list);
+    if (dirs.is_open()) {
+        while(std::getline(dirs, line)) {
+            paths = G.path_to_vector(line, "/");
+            while (!paths.empty()) {
+                if (paths.size() == 1) {
+                    if (init) {
+                        G = FileTree(paths[0], disk_size, block_size);
+                        init = false;
+                    } else
+                        G.mkdir(paths[0]);
+                    paths.clear();
+                } else {
+                    G.cd(paths[0]);
+                    paths.erase(paths.begin());
+                }
+            }
+            G.cd();
+        }
     }
-    // Scan in the directory and file lists
+
 //    char path [256];
 //    int check;
 //    FILE * dirs;
@@ -154,6 +125,67 @@ int main(int argc, char* argv[]) {
 //                G.mkdir(s);
 //        }
 //    }
+
+
+    bool running = true;
+    while(running){
+      std::string s; // input from user goes here
+      std::string delimiter = " ";
+      std::string token;
+      std::vector<std::string> args;
+      size_t pos = 0;
+
+      std::cout << G.cwd() << " >> ";
+      std::getline(std::cin, s);
+
+      while((pos = s.find(delimiter)) != std::string::npos){
+        token = s.substr(0,pos);
+        args.push_back(token);
+        s.erase(0, pos + delimiter.length());
+      }
+      //do something with the last argument
+      args.push_back(s);
+
+      unsigned long bytes;
+      std::string command = args[0];
+      if (command == "exit"){
+          running = false;
+      } else if(command == "cd") {
+          if (args.size() == 1) {
+              G.cd();
+          } else {
+              G.cd(args[1]);
+          }
+      } else if(command == "ls") {
+          G.print_dir();
+      } else if(command == "mkdir") {
+          G.mkdir(args[1]);
+      } else if(command == "create") {
+          G.create(args[1]);
+      } else if(command == "append") {
+        // conversion of string at args[2] to unsigned long bytes
+          bytes = strtoul(args[2].c_str(), nullptr, 0);
+          G.append(args[1], bytes);
+      } else if(command == "remove") {
+        // conversion of string at args[2] to unsigned long bytes
+          bytes = strtoul(args[2].c_str(), nullptr, 0);
+          G.shorten(args[1], bytes);
+      } else if(command == "delete") {
+          G.remove(args[1]);
+      } else if(command == "dir") {
+
+      } else if(command == "prfiles") {
+          G.print_disk();
+      } else if(command == "prdisk") {
+
+      } else{
+          std::cerr << command << std::endl;
+      }
+
+
+    }
+    // Scan in the directory and file lists
+
 
 //
 //    char size [256], month [256], day[256], time[256], name [256];

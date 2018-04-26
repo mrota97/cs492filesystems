@@ -1,15 +1,15 @@
 CC = gcc
-CFLAGS = -g -Wall
+CFLAGS = -g -Wall -lstdc++
 
 TARGET = FileSystem
 
 default: filesystem
 
-filesystem: main.o
-	$(CC) $(CFLAGS) -o filesystem main.o
+filesystem: filesystem.o
+	$(CC) $(CFLAGS) -o filesystem filesystem.o
 
-main.o: main.cpp filetree.h ldisk.h lfile.h
-	$(CC) $(CFLAGS) -c main.cpp
+filesystem.o: filesystem.cpp filetree.h ldisk.h lfile.h
+	$(CC) $(CFLAGS) -c filesystem.cpp
 
 clean:
-	$(RM) filesystem *.o *~
+	$(RM) filesystem *.d *.o *~
