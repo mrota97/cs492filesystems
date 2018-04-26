@@ -27,14 +27,20 @@ class lfile {
 
     friend std::ostream &operator<<(std::ostream& os, const lfile &l){
       os << "[ ";
-      for (file_node * temp = l.head; temp != nullptr; temp = temp->next)
+      file_node * temp = l.head;
+      while (temp != nullptr) {
         os << *temp << ", ";
-      os << "\b\b" << " ]";
-      return os;
+        temp = temp->next;
+      }
+      return os << "\b\b" << "]";
     }
 };
 
-lfile::lfile() {}
+lfile::lfile() {
+  head = nullptr;
+  tail = nullptr;
+  size = 0;
+}
 
 lfile::~lfile() {}
 
@@ -67,15 +73,20 @@ int lfile::append_bytes(unsigned long bytes, ldisk * disk) {
   // file_node.free -= bytes
   // return 0
   file_node * current_block = tail, * temp;
-  while(current_block->free <= bytes){
-    bytes -= current_block->free;
-    current_block->free = 0;
-    temp = add_block(disk);
-    if (temp == nullptr) {
-      return 1;
+  if (tail == nullptr) {
+    current_block = add_block(disk);
+    tail = head = current_block;
+  } else {
+    while(current_block->free < bytes){
+      bytes -= current_block->free;
+      current_block->free = 0;
+      temp = add_block(disk);
+      if (temp == nullptr) {
+        return 1;
+      }
+      current_block->next = temp;
+      current_block = current_block->next;
     }
-    current_block->next = temp;
-    current_block = current_block->next;
   }
   current_block->free -= bytes;
   return 0;

@@ -141,7 +141,7 @@ unsigned long ldisk::use_block() {
 
             int check = combine();
             if (check <= 0)
-                std::cerr << "Error: something went wrong in the combining of nodes." << std::endl;
+//                std::cerr << "Error: something went wrong in the combining of nodes." << std::endl;
             return block_location;
         } else {
             while (curr->next != nullptr) {
@@ -157,7 +157,7 @@ unsigned long ldisk::use_block() {
 
                     int check = combine();
                     if (check <= 0)
-                        std::cerr << "Error: something went wrong in the combining of nodes." << std::endl;
+//                        std::cerr << "Error: something went wrong in the combining of nodes." << std::endl;
                     return block_location;
                 }
                 curr = curr->next;

@@ -63,12 +63,23 @@ int main(int argc, char* argv[]) {
     G.create("file3.h");
 
     G.print_dir();
-
+    fflush(stdout);
     G.print_disk();
+    fflush(stdout);
 
     G.append("file1.txt", 10);
+
     G.print_disk();
+    fflush(stdout);
     G.print_file_info("file1.txt");
+    fflush(stdout);
+
+    G.append("file1.txt", 10);
+
+    G.print_disk();
+    fflush(stdout);
+    G.print_file_info("file1.txt");
+    fflush(stdout);
 
     // Scan in the directory and file lists
 //    char path [256];

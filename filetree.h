@@ -142,6 +142,7 @@ int FileTree::remove(std::string name) {
 // Append the specified amount of bytes to the given file
 void FileTree::append(std::string name, unsigned long bytes) {
     tree_node * dir = get_node(name);
+    lfile file_info = lfile();
     dir->file_info.append_bytes(bytes, &disk);
     dir->size =+ bytes;
 }
