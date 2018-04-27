@@ -109,28 +109,6 @@ int main(int argc, char* argv[]) {
         }
     }
 
-//    G.print_disk();
-//
-//    G.create("file.txt");
-//
-//    G.print_dir();
-//
-//    G.append("file.txt", 2001);
-//
-//    G.print_disk();
-//
-//    G.append("file.txt", 47);
-//
-//    G.print_disk();
-//
-//    G.append("file1.txt", 1);
-//
-//    G.print_disk();
-//
-//    G.append("file1.txt", 509438);
-//
-//    G.print_disk();
-
     std::string one, two, three, four, five, six;
     std::string size, month, day, time, path;
     std::ifstream files (file_list);
@@ -142,9 +120,7 @@ int main(int argc, char* argv[]) {
                     G.create(paths[0]);
                     struct tm stamp = {0};
                     generate_timestamp(&stamp, time, day, month);
-                    time_t timestamp = mktime(&stamp);
-                    std::cout << ctime(&timestamp) << std::endl;
-
+                    mktime(&stamp);
                     G.append(paths[0], std::stoul(size));
                     paths.clear();
                 } else {

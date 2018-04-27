@@ -125,16 +125,15 @@ int ldisk::remove_block(unsigned long addr) {
 
 void ldisk::combine() {
     disk_node * temp = head;
-//    std::cout << "IS THIS NULL?: " << *temp  << std::endl;
-    if (temp == nullptr) {
-        // nop
-    } else {
+    if (length > 1) {
         while (temp->next != nullptr) {
-            disk_node * next = temp->next;
-            if (temp->used == next->used) {
+            disk_node * next_node = temp->next;
+            if (next_node == nullptr)
+                return;
+            else if (temp->used == next_node->used) {
                 // Combine here
-                temp->block_end = next->block_end;
-                temp->next = next->next;
+                temp->block_end = next_node->block_end;
+                temp->next = next_node->next;
             } else {
                 temp = temp->next;
             }
@@ -150,6 +149,7 @@ unsigned long ldisk::use_block() {
             if (current->block_start == current->block_end) { // There's one lonely block that's free
                 current->used = true;
                 free_blocks--;
+                length++;
                 combine();
                 return current->block_start;
             } else { // There's more than one free blocks that can be used here
@@ -158,11 +158,13 @@ unsigned long ldisk::use_block() {
                 use->block_start = current->block_start + 1;
                 use->block_end = current->block_end;
                 use->used = false;
+                use->next = current->next;
 
                 current->block_end = current->block_start;
                 current->used = true;
                 current->next = use;
                 free_blocks--;
+                length++;
                 combine();
                 return current->block_start;
             }
@@ -171,43 +173,5 @@ unsigned long ldisk::use_block() {
         current = current->next;
     }
 }
-
-//    disk_node * curr = head, * next = head;
-//    auto * use = new disk_node;
-//    use->used = true;
-//    while (curr != nullptr) {
-//        if (!curr->used) {
-//            unsigned long block_location = curr->block_start;
-//            use->block_start = block_location;
-//            use->block_end = block_location;
-//            curr->block_start++;
-//
-//            use->next = curr;
-//            head = use;
-//            free_blocks--;
-//
-//            combine();
-//            return block_location;
-//        } else {
-//            while (curr->next != nullptr) {
-//                next = curr->next;
-//                if (!next->used) {
-//                    unsigned long block_location = next->block_start;
-//                    use->block_start = block_location;
-//                    use->block_end = block_location;
-//                    next->block_start++;
-//
-//                    use->next = next;
-//                    curr->next = use;
-//                    free_blocks--;
-//
-//                    combine();
-//                    return block_location;
-//                }
-//                curr = curr->next;
-//            }
-//        }
-//    }
-
 
 #endif //FILESYSTEMS_LDISK_H

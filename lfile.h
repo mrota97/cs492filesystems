@@ -45,14 +45,10 @@ lfile::lfile() {
   head = nullptr;
   tail = nullptr;
   size = 0;
+  length = 0;
 }
 
 lfile::~lfile() {}
-
-
-int lfile::remove_block(file_node * block, ldisk * disk) { // returns file block that is the new tail
-  int check = disk->remove_block(block->start_addr);
-}
 
 unsigned long lfile::add_block(ldisk * disk) {
     unsigned long block_id = disk->use_block();
@@ -71,7 +67,6 @@ int lfile::append_bytes(unsigned long bytes, ldisk * disk) {
     }
 
     unsigned long blocks_needed = std::ceil((float)bytes/(float)disk->block_size), block_id, addr;
-    std::cout << "This file needs " << blocks_needed << " blocks. The disk has " << disk->free_blocks << " blocks free." << std::endl;
     if (disk->free_blocks < blocks_needed) {
         std::cerr << "Out of space." << std::endl;
         fflush(stdout);
@@ -102,29 +97,10 @@ int lfile::append_bytes(unsigned long bytes, ldisk * disk) {
     }
 
     return 0;
-//  file_node * current_block = tail, * temp;
-//  if (tail == nullptr) {
-//    current_block = add_block(disk);
-//    if (current_block == nullptr) {
-//        std::cerr << "Our of space" << std::endl;
-//        return -1;
-//    }
-//    tail = head = current_block;
-//  } else {
-//    while(current_block->free < bytes){
-//      bytes -= current_block->free;
-//      current_block->free = 0;
-//      temp = add_block(disk);
-//      if (temp == nullptr) {
-//        return 1;
-//      }
-//      current_block->next = temp;
-//      current_block = current_block->next;
-//      tail = current_block;
-//    }
-//  }
-//  current_block->free -= bytes;
-//  return 0;
+}
+
+int lfile::remove_block(file_node * block, ldisk * disk) { // returns file block that is the new tail
+    int check = disk->remove_block(block->start_addr);
 }
 
 int lfile::remove_bytes(unsigned long bytes, ldisk * disk) {

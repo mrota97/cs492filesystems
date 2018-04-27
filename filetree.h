@@ -273,6 +273,7 @@ void FileTree::print_dir() {
 }
 
 void FileTree::print_disk() {
+    disk.combine();
     std::cout << disk << std::endl;
 }
 
