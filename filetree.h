@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <queue>
 
 #include "ldisk.h"
 #include "lfile.h"
@@ -62,6 +63,7 @@ public:
     int cd(std::string path="");
 
     // Printing
+    void bfs();
     void prfiles(tree_node * node);
     void footprint();
     void print_dir();
@@ -164,7 +166,7 @@ void FileTree::shorten(std::string name, unsigned long bytes) {
     dir->size -= bytes;
 }
 
-// changes the working direcotry 
+// changes the working direcotry
 int FileTree::cd(std::string name) {
     if (name.empty()) {
         current_dir = root;
@@ -288,6 +290,25 @@ void FileTree::footprint() {
     disk.print_footprint();
 }
 
-// 
+//
 
+void FileTree::bfs() {
+  tree_node* node;
+  // create an empty queue
+  std::queue <tree_node*> q;
+  // start from root, insert root into queue
+  q.push(root);
+  // while queue is not empty:
+  while(!q.empty()){
+    // extract node from queue
+    node = q.front();
+    q.pop();
+    // print the extracted node
+    std::cout << *node << std::endl;
+    // insert all its children into queue
+    for(int i=0;i < node->children.size();i++){
+      q.push(node->children[i]);
+    }
+  }
+}
 #endif //FILESYSTEMS_NODE_H
