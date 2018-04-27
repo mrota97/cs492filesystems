@@ -8,7 +8,7 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include <ctime>
+
 #include "ldisk.h"
 #include "lfile.h"
 
@@ -27,19 +27,24 @@ struct tree_node {
 };
 
 class FileTree {
+public:
     tree_node * root, * current_dir;
     ldisk disk;
-public:
     // Constructors & Destructors
     FileTree();
     FileTree(std::string root_dir, unsigned long disk, unsigned long block);
     virtual ~FileTree();
 
-    // Helpers
+    //// Helpers
     std::vector<std::string> path_to_vector(std::string path, const std::string &delimiter);
-    tree_node* get_node(std::string name);
     bool is_empty(std::string name);
     void absoulute_add(std::string path, bool type);
+    // Getters
+    tree_node* get_node(std::string name);
+    tree_node* get_root();
+    // Setters
+    void set_timestamp(std::string name, time_t time);
+
 
     // Creation
     void mkdir(std::string name);
@@ -57,6 +62,7 @@ public:
     int cd(std::string path="");
 
     // Printing
+    void prfiles(tree_node * node);
     void footprint();
     void print_dir();
     void print_disk();
@@ -99,7 +105,7 @@ void FileTree::mkdir(std::string name) {
     temp->level = dir->level + 1;
     temp->is_dir = true;
     temp->size = 0;
-    temp->timestamp = 0;
+    temp->timestamp = std::time(nullptr);
     dir->children.push_back(temp);
 }
 
@@ -109,6 +115,8 @@ void FileTree::create(std::string name) {
     tree_node * temp = new tree_node;
     temp->name = name;
     temp->path = dir->path + name;
+    temp->parent = dir;
+    temp->level = dir->level + 1;
     temp->is_dir = false;
     temp->size = 0;
     temp->timestamp = std::time(nullptr);
@@ -194,6 +202,15 @@ tree_node* FileTree::get_node(std::string name) {
     return dir;
 }
 
+tree_node* FileTree::get_root() {
+    return root;
+}
+
+void FileTree::set_timestamp(std::string name, time_t timestamp) {
+    tree_node * node = get_node(name);
+    node->timestamp = timestamp;
+}
+
 // Returns the current directory
 std::string FileTree::cwd() {
     return current_dir->path;
@@ -237,6 +254,17 @@ std::vector<std::string> FileTree::path_to_vector(std::string p, const std::stri
     return path_names;
 }
 
+void FileTree::prfiles(tree_node * node) {
+    if (node != nullptr) {
+        std::cout << node->path
+                  << ", " << node->size
+                  << ", " << node->timestamp
+                  << ", " << node->file_info << std::endl;
+        for (tree_node *n: node->children)
+            prfiles(n);
+    }
+}
+
 void FileTree::print_dir() {
     tree_node * dir = current_dir;
     for (tree_node *n: dir->children) {
@@ -250,21 +278,14 @@ void FileTree::print_disk() {
 
 void FileTree::print_file_info(std::string name) {
     tree_node * node = get_node(name);
-    std::cout << node->file_info << std::endl;
+    if (!node->is_dir) {
+        std::cout << node->file_info << std::endl;
+    }
 }
 
 void FileTree::footprint() {
     disk.print_footprint();
 }
-
-//void FileTree::debug_print() {
-//    std::cout << "node(" <<
-//              this->name << ", " <<
-//              this->path << ", " <<
-//              this->size << " Blocks, time{" <<
-//              this->timestamp << "}" << std::endl;
-//    std::cout << this->name << "'s file_info: " << this->file_info << std::endl;
-//};
 
 // 
 

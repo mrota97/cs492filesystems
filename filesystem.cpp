@@ -3,6 +3,7 @@
 #include <fstream>
 #include <fcntl.h>
 #include <cstring>
+#include <ctime>
 #include "filetree.h"
 
 static void show_usage(char* progname) {
@@ -11,6 +12,43 @@ static void show_usage(char* progname) {
               "[-d input files storing information on directories]" <<
               "[-s disk size]" <<
               "[-b block size]" << std::endl;
+}
+
+void generate_timestamp(tm * stamp, std::string time, std::string day, std::string month) {
+    // Set the month correctly
+    if (month == "Jan")
+        stamp->tm_mon = 0;
+    else if (month == "Feb")
+        stamp->tm_mon = 1;
+    else if (month == "Mar")
+        stamp->tm_mon = 2;
+    else if (month == "Apr")
+        stamp->tm_mon = 3;
+    else if (month == "May")
+        stamp->tm_mon = 4;
+    else if (month == "Jun")
+        stamp->tm_mon = 5;
+    else if (month == "Jul")
+        stamp->tm_mon = 6;
+    else if (month == "Aug")
+        stamp->tm_mon = 7;
+    else if (month == "Sep")
+        stamp->tm_mon = 8;
+    else if (month == "Oct")
+        stamp->tm_mon = 9;
+    else if (month == "Nov")
+        stamp->tm_mon = 10;
+    else if (month == "Dec")
+        stamp->tm_mon = 11;
+
+    // Day
+    stamp->tm_mday = std::stoi(day);
+
+    // Extract hour and minute
+    size_t pos = time.find(':');
+    stamp->tm_hour = std::stoi(time.substr(0, pos));
+    stamp->tm_min = std::stoi(time.substr(pos+1, std::string::npos));
+
 }
 
 int main(int argc, char* argv[]) {
@@ -45,44 +83,6 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
 
-//    FileTree G = FileTree("./", disk_size, block_size);
-//    std::cout << *G.cwd() << std::endl;
-//
-//    G.mkdir("dir1");
-//    G.mkdir("dir2");
-//    G.mkdir("dir3");
-//
-//    G.print_dir();
-//
-//    int check = G.cd("dir2");
-//    std::cout << ((check==0) ? "success" : "failure") << std::endl;
-//    std::cout << *G.cwd() << std::endl;
-//
-//    G.create("file1.txt");
-//    G.create("file2.cpp");
-//    G.create("file3.h");
-//
-//    G.print_dir();
-//    fflush(stdout);
-//    G.print_disk();
-//    fflush(stdout);
-//
-//    G.append("file1.txt", 10);
-//
-//    G.print_disk();
-//    fflush(stdout);
-//    G.print_file_info("file1.txt");
-//    fflush(stdout);
-//
-//    G.append("file1.txt", 10);
-//
-//    G.print_disk();
-//    fflush(stdout);
-//    G.print_file_info("file1.txt");
-//    fflush(stdout);
-//
-//    G.footprint();
-
     FileTree G;
 
     std::string line;
@@ -109,26 +109,54 @@ int main(int argc, char* argv[]) {
         }
     }
 
-//    char path [256];
-//    int check;
-//    FILE * dirs;
-//    FileTree G;
+//    G.print_disk();
 //
-//    dirs = fopen(dir_list, "r");
-//    if (dirs == nullptr) perror("Error: dir_list.txt");
-//    else {
-//        while ((check = fscanf(dirs, "%s", path)) != -1) {
-//            std::string s((const char*)path);
-//            if (strcmp(path, "./") == 0)
-//                G = FileTree(s);
-//            else
-//                G.mkdir(s);
-//        }
-//    }
+//    G.create("file.txt");
+//
+//    G.print_dir();
+//
+//    G.append("file.txt", 2001);
+//
+//    G.print_disk();
+//
+//    G.append("file.txt", 47);
+//
+//    G.print_disk();
+//
+//    G.append("file1.txt", 1);
+//
+//    G.print_disk();
+//
+//    G.append("file1.txt", 509438);
+//
+//    G.print_disk();
 
+    std::string one, two, three, four, five, six;
+    std::string size, month, day, time, path;
+    std::ifstream files (file_list);
+    if (files.is_open()) {
+        while (files >> one >> two >> three >> four >> five >> six >> size >> month >> day >> time >> path) {
+            paths = G.path_to_vector(path, "/");
+            while (!paths.empty()) {
+                if (paths.size() == 1) {
+                    G.create(paths[0]);
+                    struct tm stamp = {0};
+                    generate_timestamp(&stamp, time, day, month);
+                    time_t timestamp = mktime(&stamp);
+                    std::cout << ctime(&timestamp) << std::endl;
 
-    bool running = true;
-    while(running){
+                    G.append(paths[0], std::stoul(size));
+                    paths.clear();
+                } else {
+                    G.cd(paths[0]);
+                    paths.erase(paths.begin());
+                }
+            }
+            G.cd();
+        }
+    }
+
+    while(true){
       std::string s; // input from user goes here
       std::string delimiter = " ";
       std::string token;
@@ -149,7 +177,7 @@ int main(int argc, char* argv[]) {
       unsigned long bytes;
       std::string command = args[0];
       if (command == "exit"){
-          running = false;
+          break;
       } else if(command == "cd") {
           if (args.size() == 1) {
               G.cd();
@@ -175,41 +203,12 @@ int main(int argc, char* argv[]) {
       } else if(command == "dir") {
 
       } else if(command == "prfiles") {
-          G.print_disk();
+          G.prfiles(G.get_root());
       } else if(command == "prdisk") {
-
+          G.print_disk();
       } else{
           std::cerr << command << std::endl;
       }
-
-
     }
-    // Scan in the directory and file lists
-
-
-//
-//    char size [256], month [256], day[256], time[256], name [256];
-//    FILE * files;
-//
-//    files = fopen(file_list, "r");
-//    if (files == nullptr) perror("Error: file_list.txt");
-//    else {
-//        while ((check = fscanf(files, "%*s %*s %*s %*s %*s %*s %s %s %s %s %s", size, month, day, time, name)) != -1) {
-//
-//        }
-//        fclose(files);
-//    }
-
-
-//    FileTree root ("./", nullptr);
-    // cd no argument = ..
-    // dir print out file tree
-    // ls list current directory contents
-    // mkdir make a directory
-    // create takes a name makes a file
-    // append filename bytes
-    // remove filename bytes
-    // delete file or directory
-    // exit
     exit(EXIT_SUCCESS);
 }

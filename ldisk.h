@@ -27,17 +27,19 @@ public:
     void print_footprint();
     int get_pos(disk_node * block);
     disk_node * find_block(unsigned long block_id);
-    int combine();
+    void combine();
     int remove_block(unsigned long addr);
     unsigned long use_block();
     friend std::ostream &operator<<(std::ostream& os, const ldisk &l){
         os << "[ ";
         disk_node * temp = l.head;
         while (temp != nullptr) {
-            os << *temp << ", ";
+            os << *temp;
+            if (temp->next != nullptr)
+                os << ", ";
             temp = temp->next;
         }
-        return os << "\b\b" << " ]";
+        return os << " ] free_blocks: " << l.free_blocks;
     }
 };
 
@@ -121,70 +123,91 @@ int ldisk::remove_block(unsigned long addr) {
     return 0;
 }
 
-int ldisk::combine() {
-    int changed = 0;
-    if (length == 0 || length == 1 || head == nullptr) {
-        return changed; // Nothing to do
-    }
+void ldisk::combine() {
     disk_node * temp = head;
-    while (temp->next != nullptr) {
-        disk_node * next = temp->next;
-        if (temp->used == next->used) {
-            // Combine here
-            temp->block_end = next->block_end;
-            temp->next = next->next;
-            changed++;
-        }
-        temp = temp->next;
-    }
-    return changed;
-}
-
-// Inserts a block in a free space and returns its block_id
-unsigned long ldisk::use_block() {
-    if (free_blocks == 0) {
-        std::cerr << "Out of space." << std::endl;
-        return length;
-    }
-    disk_node * curr = head, * next = head;
-    auto * use = new disk_node;
-    use->used = true;
-    while (curr != nullptr) {
-        if (!curr->used) {
-            unsigned long block_location = curr->block_start;
-            use->block_start = block_location;
-            use->block_end = block_location;
-            curr->block_start++;
-
-            use->next = curr;
-            head = use;
-
-            int check = combine();
-            if (check <= 0)
-//                std::cerr << "Error: something went wrong in the combining of nodes." << std::endl;
-            return block_location;
-        } else {
-            while (curr->next != nullptr) {
-                next = curr->next;
-                if (!next->used) {
-                    unsigned long block_location = next->block_start;
-                    use->block_start = block_location;
-                    use->block_end = block_location;
-                    next->block_start++;
-
-                    use->next = next;
-                    curr->next = use;
-
-                    int check = combine();
-                    if (check <= 0)
-//                        std::cerr << "Error: something went wrong in the combining of nodes." << std::endl;
-                    return block_location;
-                }
-                curr = curr->next;
+//    std::cout << "IS THIS NULL?: " << *temp  << std::endl;
+    if (temp == nullptr) {
+        // nop
+    } else {
+        while (temp->next != nullptr) {
+            disk_node * next = temp->next;
+            if (temp->used == next->used) {
+                // Combine here
+                temp->block_end = next->block_end;
+                temp->next = next->next;
+            } else {
+                temp = temp->next;
             }
         }
     }
 }
+
+// Inserts a block in a free space and returns its block_id
+unsigned long ldisk::use_block() {
+    disk_node *current = head;
+    while (current != nullptr) {
+        if (!current->used) {
+            if (current->block_start == current->block_end) { // There's one lonely block that's free
+                current->used = true;
+                free_blocks--;
+                combine();
+                return current->block_start;
+            } else { // There's more than one free blocks that can be used here
+                auto *use = new disk_node;
+
+                use->block_start = current->block_start + 1;
+                use->block_end = current->block_end;
+                use->used = false;
+
+                current->block_end = current->block_start;
+                current->used = true;
+                current->next = use;
+                free_blocks--;
+                combine();
+                return current->block_start;
+            }
+
+        }
+        current = current->next;
+    }
+}
+
+//    disk_node * curr = head, * next = head;
+//    auto * use = new disk_node;
+//    use->used = true;
+//    while (curr != nullptr) {
+//        if (!curr->used) {
+//            unsigned long block_location = curr->block_start;
+//            use->block_start = block_location;
+//            use->block_end = block_location;
+//            curr->block_start++;
+//
+//            use->next = curr;
+//            head = use;
+//            free_blocks--;
+//
+//            combine();
+//            return block_location;
+//        } else {
+//            while (curr->next != nullptr) {
+//                next = curr->next;
+//                if (!next->used) {
+//                    unsigned long block_location = next->block_start;
+//                    use->block_start = block_location;
+//                    use->block_end = block_location;
+//                    next->block_start++;
+//
+//                    use->next = next;
+//                    curr->next = use;
+//                    free_blocks--;
+//
+//                    combine();
+//                    return block_location;
+//                }
+//                curr = curr->next;
+//            }
+//        }
+//    }
 
 
 #endif //FILESYSTEMS_LDISK_H
